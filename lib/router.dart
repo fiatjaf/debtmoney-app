@@ -1,7 +1,8 @@
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 
-import './peer/peer.dart';
+import './login.dart';
+import './peer.dart';
 
 class R {
   static final Router _router = new Router();
@@ -12,7 +13,14 @@ class R {
     },
   );
 
+  static var loginHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new GoogleLogin();
+    },
+  );
+
   static void initRoutes() {
+    _router.define("/login", handler: loginHandler);
     _router.define("/peer/:id", handler: peerHandler);
   }
 

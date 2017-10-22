@@ -3,11 +3,12 @@ import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:contact_picker/contact_picker.dart';
 
+import './models.dart';
 import './ui.dart';
 import './style.dart';
 import './router.dart';
-import './peer/peer.dart';
-import './peer/list.dart';
+import './peer.dart';
+import './sidemenu.dart';
 
 
 void main() {
@@ -18,7 +19,22 @@ void main() {
   ));
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _GlobalState createState() => new _GlobalState();
+}
+
+class _GlobalState extends State<HomePage> {
+  var me = new Peer(tempId: 1);
+  var peers = <Peer>[
+    new Peer(id: "fulano"),
+    new Peer(id: "beltrana"),
+    new Peer(id: "ciclano"),
+    new Peer(id: "fulana"),
+    new Peer(id: "beltrano"),
+    new Peer(id: "ciclana"),
+  ];
+
   final _contactPicker = new ContactPicker();
 
   @override
@@ -44,9 +60,10 @@ class HomePage extends StatelessWidget {
       body: new Column(
         children: <Widget>[
           new GradientAppBar('debtmoney.xyz'),
-          new PeerList(),
+          new PeerList(peers),
         ]
-      )
+      ),
+      drawer: new SideMenu(me),
     );
   }
 }

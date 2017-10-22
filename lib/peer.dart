@@ -2,30 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../style.dart';
+import './style.dart';
+import './router.dart';
+import './models.dart';
 
-class Peer {
-  final String tempId;
-  final String id;
+class PeerList extends StatelessWidget {
+  final List<Peer> peers;
 
-  const Peer({this.tempId, this.id});
-}
+  const PeerList(this.peers);
 
-class Record {
-  var String record_date;
-  var String created_at;
-  var String asset;
-  var Debt description;
+  @override
+  Widget build(BuildContext context) {
+    return new Expanded(
+      child: new Container(
+        color: Colours.peerPageBackground,
+        child: new ListView.builder(
+          itemCount: peers.length,
+          itemBuilder: (_, index) {
+            var peer = peers[index];
 
-  const Record({this.record_date, this.created_at, this.asset, this.description});
-}
-
-class Debt {
-  var String from
-  var String to
-  var String amt
-
-  const Debt({this.from, this.to, this.amt})
+            return new FlatButton(
+              onPressed: () => R.navigateTo(
+                context,
+                '/peer/${peer.id}',
+                transition: TransitionType.fadeIn,
+              ),
+              child: new PeerItem(peer),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
 
 class PeerItem extends StatelessWidget {
@@ -102,7 +110,7 @@ class PeerItem extends StatelessWidget {
 class PeerPage extends StatefulWidget {
   final String id;
 
-  PeerPage(this.id);
+  const PeerPage(this.id);
 
   @override
   _PeerState createState() => new _PeerState(id);
