@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:color/color.dart' as ColorLib;
 
 class TextStyles {
   const TextStyles();
@@ -48,4 +49,20 @@ class Colours {
   static const Color peerTitle = const Color(0xFFFFFFFF);
   static const Color peerLocation = const Color(0x66FFFFFF);
   static const Color peerDistance = const Color(0x66FFFFFF);
+}
+
+Hashcolor (String input) {
+  var sum = 0;
+  for (var i = 0; i < input.codeUnits.length; i++) {
+    sum += input.codeUnitAt(i);
+  }
+  sum = sum * sum;
+
+  var rgb = new ColorLib.HslColor(sum % 360, 30, 50).toRgbColor();
+  return new Color.fromRGBO(
+    rgb.r,
+    rgb.g,
+    rgb.b,
+    1.0,
+  );
 }

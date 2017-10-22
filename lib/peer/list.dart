@@ -18,9 +18,6 @@ class _PeerListState extends State<PeerList> {
     const Peer(id: "fulana"),
     const Peer(id: "beltrano"),
     const Peer(id: "ciclana"),
-    const Peer(id: "ninguém"),
-    const Peer(id: "alguém"),
-    const Peer(id: "quase"),
   ];
 
   @override
@@ -29,22 +26,17 @@ class _PeerListState extends State<PeerList> {
       child: new Container(
         color: Colours.peerPageBackground,
         child: new ListView.builder(
-          itemExtent: 90.0,
           itemCount: peers.length,
           itemBuilder: (_, index) {
             var peer = peers[index];
 
-            return new Container(
-              height: 90.0,
-              margin: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-              child: new FlatButton(
-                onPressed: () => R.navigateTo(
-                  context,
-                  '/peer/${peer.id}',
-                  transition: TransitionType.fadeIn,
-                ),
-                child: new PeerItem(peer),
-              )
+            return new FlatButton(
+              onPressed: () => R.navigateTo(
+                context,
+                '/peer/${peer.id}',
+                transition: TransitionType.fadeIn,
+              ),
+              child: new PeerItem(peer),
             );
           },
         ),
