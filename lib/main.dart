@@ -25,7 +25,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _GlobalState extends State<HomePage> {
-  var me = new Peer(tempId: 1);
+  Peer me;
   var peers = <Peer>[
     new Peer(id: "fulano"),
     new Peer(id: "beltrana"),
@@ -36,6 +36,12 @@ class _GlobalState extends State<HomePage> {
   ];
 
   final _contactPicker = new ContactPicker();
+
+  void setLoggedUser (Peer logged) {
+    setState(() {
+      me = logged;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +69,7 @@ class _GlobalState extends State<HomePage> {
           new PeerList(peers),
         ]
       ),
-      drawer: new SideMenu(me),
+      drawer: new SideMenu(me, setLoggedUser: setLoggedUser),
     );
   }
 }

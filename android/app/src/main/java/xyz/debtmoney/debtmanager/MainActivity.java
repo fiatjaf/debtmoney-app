@@ -1,4 +1,4 @@
-package com.yourcompany.debtmanager;
+package xyz.debtmoney.debtmanager;
 
 import android.os.Bundle;
 
