@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:contact_picker/contact_picker.dart';
+import 'package:sqflite/sqflite.dart';
 
 import './models.dart';
 import './ui.dart';
+import './db.dart';
 import './style.dart';
 import './router.dart';
 import './peer.dart';
@@ -26,20 +28,26 @@ class HomePage extends StatefulWidget {
 
 class _GlobalState extends State<HomePage> {
   Peer me;
-  var peers = <Peer>[
-    new Peer(id: "fulano"),
-    new Peer(id: "beltrana"),
-    new Peer(id: "ciclano"),
-    new Peer(id: "fulana"),
-    new Peer(id: "beltrano"),
-    new Peer(id: "ciclana"),
-  ];
+  var peers = <Peer>[];
 
   final _contactPicker = new ContactPicker();
 
   void setLoggedUser (Peer logged) {
     setState(() {
       me = logged;
+    });
+  }
+
+  void getPeers () async {
+    final Database db = await getDB();
+    List<Map> res = await db.rawQuery('SELECT * FROM contacts');
+
+    setState(() {
+      peers = res.map((row) => new Peer(
+        id: row['id'],
+        account: row['account'],
+        name: row['name'],
+      )).toList();
     });
   }
 
@@ -69,7 +77,10 @@ class _GlobalState extends State<HomePage> {
           new PeerList(peers),
         ]
       ),
-      drawer: new SideMenu(me, setLoggedUser: setLoggedUser),
+      drawer: new SideMenu(me,
+        setLoggedUser: setLoggedUser,
+        getPeers: getPeers,
+      ),
     );
   }
 }

@@ -1,10 +1,15 @@
+import 'dart:convert' show JSON;
+
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:http/http.dart' as http;
 
 import './router.dart';
 import './models.dart';
+import './db.dart';
 
 GoogleSignIn _googleSignIn = new GoogleSignIn(
   scopes: [
@@ -16,16 +21,59 @@ GoogleSignIn _googleSignIn = new GoogleSignIn(
 class SideMenu extends StatelessWidget {
   Peer me;
 
-  SideMenu(Peer me, {void setLoggedUser(Peer logged)}) {
+  SideMenu(Peer me, {void setLoggedUser(Peer logged), void getPeers()}) {
     this.me = me;
 
-    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account) {
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account) async {
       if (account == null) {
         setLoggedUser(null);
       } else {
         setLoggedUser(new Peer(id: account.id));
+
+        final http.Response response = await http.get(
+          'https://people.googleapis.com/v1/people/me/connections'
+            '?personFields=names,emailAddresses',
+          headers: await account.authHeaders,
+        );
+
+        if (response.statusCode != 200) {
+          print('People API ${response.statusCode} response: ${response.body}');
+          return;
+        }
+
+        final Map<String, dynamic> data = JSON.decode(response.body);
+        print(data);
+
+        final Database db = await getDB();
+
+        try {
+          await db.inTransaction(() async {
+            data['connections']
+              .where((Map<String, dynamic> contact) =>
+                contact['emailAddresses'] != null
+                  ? contact['emailAddresses'].length > 0
+                  : false
+              )
+              .where((Map<String, dynamic> contact) =>
+                contact['names'] != null
+                  ? contact['names'].length > 0
+                  : false
+              )
+              .forEach((Map<String, dynamic> contact) {
+                db.insert('contacts', <String, dynamic>{
+                  'account': contact['emailAddresses'][0]['value'],
+                  'name': contact['names'][0]['displayName'],
+                });
+              });
+          });
+        } catch (err) {
+          print(err);
+        }
+
+        getPeers();
       }
     });
+
     _googleSignIn.signInSilently();
   }
 

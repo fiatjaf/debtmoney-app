@@ -1,9 +1,9 @@
 class Peer {
-  final int tempId;
+  final String account;
   final String id;
-  List<Record> records;
+  final String name;
 
-  Peer({this.tempId, this.id, this.records});
+  Peer({this.account, this.id, this.name});
 }
 
 class Record {

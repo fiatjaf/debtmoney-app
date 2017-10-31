@@ -8,6 +8,8 @@ dependencies:
   contact_picker: 0.0.1+2
   color: any
   google_sign_in: any
+  sqflite: any
+  path_provider: any
   flutter:
     sdk: flutter
 
