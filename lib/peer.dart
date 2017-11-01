@@ -18,7 +18,6 @@ class PeerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new Container(
-      color: style.peerPageBackgroundColor,
       child: new ListView.builder(
         itemCount: peers.length,
         itemBuilder: (_, index) {
@@ -47,8 +46,8 @@ class PeerItem extends StatelessWidget {
         tag: 'peer-icon-${peer.id ?? peer.account}',
         child: new CircleAvatar(
           radius: 50.0,
-          backgroundColor: style.Hashcolor(peer.id ?? peer.account),
-          child: new Text((peer.id ?? peer.account)[0]),
+          backgroundColor: style.hashcolor(peer.id ?? peer.account),
+          child: new Text((peer.id ?? peer.account)[0].toUpperCase()),
         ),
       ),
       title: new Text(
@@ -57,13 +56,11 @@ class PeerItem extends StatelessWidget {
       ),
       subtitle: new Row(
         children: <Widget>[
-          new Icon(FontAwesomeIcons.arrowUp, size: 14.0,
-            color: style.peerDetailColor),
-          new Text(' ' + '17', style: style.peerDetail),
+          new Icon(FontAwesomeIcons.arrowUp, size: 14.0, color: Colors.white),
+          new Text(' ' + '17'),
           new Container(width: 24.0),
-          new Icon(FontAwesomeIcons.arrowDown, size: 14.0,
-            color: style.peerDetailColor),
-          new Text(' ' + '5', style: style.peerDetail),
+          new Icon(FontAwesomeIcons.arrowDown, size: 14.0, color: Colors.white),
+          new Text(' ' + '5'),
         ],
       ),
     );
@@ -113,15 +110,7 @@ class _PeerState extends State<PeerPage> {
 
     return new Scaffold(
       appBar: new AppBar(
-        title: new Row(
-          children: <Widget>[
-            new Text(
-              peer.name ?? peer.id ?? peer.account,
-              style: style.peerPage,
-            ),
-          ],
-        ),
-        actions: null,
+        title: new Text(peer.id ?? peer.account),
       ),
       body: new Stack(
         children: <Widget>[
@@ -164,17 +153,19 @@ class _ChoosePeerState extends State<ChoosePeer> {
         title: new Row(
           children: <Widget>[
             new Text(
-              'New operation',
+              'New Debt',
             ),
           ],
         ),
       ),
-      body: new ListView.builder(
-        itemCount: this.peers.length,
-        itemBuilder: (_, index) {
-          var peer = this.peers[index];
-          return new PeerItem(peer);
-        },
+      body: new Container(
+        child: new ListView.builder(
+          itemCount: this.peers.length,
+          itemBuilder: (_, index) {
+            var peer = this.peers[index];
+            return new PeerItem(peer);
+          },
+        ),
       ),
     );
   }

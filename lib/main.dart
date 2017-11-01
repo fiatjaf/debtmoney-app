@@ -17,8 +17,9 @@ void main() {
   runApp(new MaterialApp(
     title: "Debtmoney Debt Manager",
     theme: new ThemeData(
-      primarySwatch: Colors.deepPurple,
+      primarySwatch: Colors.amber,
       accentColor: Colors.amberAccent,
+      scaffoldBackgroundColor: const Color(0xFF736AB7),
     ),
     home: new HomePage(),
   ));
@@ -71,7 +72,6 @@ class _GlobalState extends State<HomePage> {
       floatingActionButton: new FloatingActionButton(
         child: new Icon(FontAwesomeIcons.money),
         tooltip: 'Start managing debts with a new contact',
-        backgroundColor: new Color(0xFF42A5F5),
         onPressed: () {
           R.navigateTo(
             context,

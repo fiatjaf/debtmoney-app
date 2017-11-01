@@ -87,6 +87,8 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('me: ${me}');
+
     Widget body;
 
     if (me == null) {
@@ -112,7 +114,7 @@ class SideMenu extends StatelessWidget {
       body = new ListView(
         children: <Widget>[
           new DrawerHeader(
-            child: new Text('Logged in as ' + me.id),
+            child: new Text('Logged in as ${me.id ?? me.account}'),
           ),
         ],
       );
