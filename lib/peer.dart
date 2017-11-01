@@ -82,17 +82,15 @@ class PeerPage extends StatefulWidget {
 class _PeerState extends State<PeerPage> {
   Peer peer;
 
-  var debts = <Record>[];
-
   _PeerState(Map<String, dynamic> params) {
     getDB()
       .then((db) {
         if (params['id'] != null) {
           return db.rawQuery(
-            'SELECT * FROM contacts WHERE id = ?', [params['id']]);
+            'SELECT * FROM peers WHERE id = ?', [params['id']]);
         } else {
           return db.rawQuery(
-            'SELECT * FROM contacts WHERE account = ?', [params['account']]);
+            'SELECT * FROM peers WHERE account = ?', [params['account']]);
         }
       })
       .then((List<Map> rows) {
@@ -129,6 +127,54 @@ class _PeerState extends State<PeerPage> {
         children: <Widget>[
           new Text(peer.name ?? '~'),
         ],
+      ),
+    );
+  }
+}
+
+class ChoosePeer extends StatefulWidget {
+  @override
+  _ChoosePeerState createState() => new _ChoosePeerState();
+}
+
+class _ChoosePeerState extends State<ChoosePeer> {
+  var peers = <Peer>[];
+
+  _ChoosePeerState() {
+    getDB()
+      .then((db) {
+        return db.rawQuery('SELECT * FROM peers WHERE idx > 0 ORDER BY name');
+      })
+      .then((List<Map> rows) {
+        setState(() {
+          this.peers = rows.map((row) => new Peer(
+            id: row['id'],
+            account: row['account'],
+            name: row['name']
+          )).toList();
+        });
+      })
+      .catchError((err) => print(err));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Row(
+          children: <Widget>[
+            new Text(
+              'New operation',
+            ),
+          ],
+        ),
+      ),
+      body: new ListView.builder(
+        itemCount: this.peers.length,
+        itemBuilder: (_, index) {
+          var peer = this.peers[index];
+          return new PeerItem(peer);
+        },
       ),
     );
   }

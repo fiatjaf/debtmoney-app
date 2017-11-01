@@ -1,4 +1,5 @@
 import 'dart:convert' show JSON;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
@@ -21,14 +22,17 @@ GoogleSignIn _googleSignIn = new GoogleSignIn(
 class SideMenu extends StatelessWidget {
   Peer me;
 
-  SideMenu(Peer me, {void setLoggedUser(Peer logged), void getPeers()}) {
+  SideMenu(Peer me, {void getLoggedUser(), void getPeers()}) {
     this.me = me;
 
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount account) async {
-      if (account == null) {
-        setLoggedUser(null);
-      } else {
-        setLoggedUser(new Peer(id: account.id));
+      if (account != null) {
+        final Database db = await getDB();
+
+        await db.execute(
+          'UPDATE OR IGNORE peers SET account = ? WHERE idx = 0', [account.email]);
+
+        getLoggedUser();
 
         final http.Response response = await http.get(
           'https://people.googleapis.com/v1/people/me/connections'
@@ -42,35 +46,36 @@ class SideMenu extends StatelessWidget {
         }
 
         final Map<String, dynamic> data = JSON.decode(response.body);
-        final Database db = await getDB();
 
         try {
           await db.inTransaction(() async {
-            data['connections']
-              .where((Map<String, dynamic> contact) =>
-                contact['emailAddresses'] != null
-                  ? contact['emailAddresses'].length > 0
-                  : false
-              )
-              .where((Map<String, dynamic> contact) =>
-                contact['names'] != null
-                  ? contact['names'].length > 0
-                  : false
-              )
-              .forEach((Map<String, dynamic> contact) {
-                try {
-                  db.insert('contacts', <String, dynamic>{
-                    'account': contact['emailAddresses'][0]['value'],
-                    'name': contact['names'][0]['displayName'],
-                    'actual': false,
-                  });
-                } catch (err) {
-                  print('insert exception');
-                }
-              });
+            await Future.wait(
+              data['connections']
+                .where((Map<String, dynamic> contact) =>
+                  contact['emailAddresses'] != null
+                    ? contact['emailAddresses'].length > 0
+                    : false
+                )
+                .where((Map<String, dynamic> contact) =>
+                  contact['names'] != null
+                    ? contact['names'].length > 0
+                    : false
+                )
+                .map((Map<String, dynamic> contact) {
+                  try {
+                    return db.rawInsert(
+                      'INSERT OR IGNORE INTO peers (account, name) VALUES (?, ?)', [
+                      contact['emailAddresses'][0]['value'],
+                      contact['names'][0]['displayName']
+                    ]);
+                  } catch (err) {
+                    print('insert exception: ${err}');
+                  }
+                })
+            );
           });
         } catch (err) {
-          print('transaction exception');
+          print('transaction exception: ${err}');
         }
 
         getPeers();
@@ -97,7 +102,7 @@ class SideMenu extends StatelessWidget {
               try {
                 await _googleSignIn.signIn();
               } catch (err) {
-                print(err);
+                print('google sign-in exception: ${err}');
               }
             },
           ),
@@ -108,17 +113,6 @@ class SideMenu extends StatelessWidget {
         children: <Widget>[
           new DrawerHeader(
             child: new Text('Logged in as ' + me.id),
-          ),
-          new ListTile(
-            leading: new Icon(FontAwesomeIcons.google),
-            title: new Text('Logout'),
-            onTap: () async {
-              try {
-                await _googleSignIn.disconnect();
-              } catch (err) {
-                print(err);
-              }
-            },
           ),
         ],
       );

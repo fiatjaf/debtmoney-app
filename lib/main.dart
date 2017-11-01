@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:contact_picker/contact_picker.dart';
 import 'package:sqflite/sqflite.dart';
 
 import './models.dart';
@@ -32,17 +33,28 @@ class _GlobalState extends State<HomePage> {
   Peer me;
   var peers = <Peer>[];
 
-  final _contactPicker = new ContactPicker();
+  _GlobalState () {
+    getLoggedUser();
+    getPeers();
+  }
 
-  void setLoggedUser (Peer logged) {
+  Future getLoggedUser () async {
+    final Database db = await getDB();
+    List<Map> res = await db.rawQuery(
+      'SELECT id, account FROM peers WHERE idx = 0');
+
     setState(() {
-      me = logged;
+      me = new Peer(
+        id: res[0]['id'],
+        account: res[0]['account'],
+      );
     });
   }
 
-  void getPeers () async {
+  Future getPeers () async {
     final Database db = await getDB();
-    List<Map> res = await db.rawQuery('SELECT * FROM contacts');
+    List<Map> res = await db.rawQuery(
+      'SELECT id, account, name FROM peers WHERE show');
 
     setState(() {
       peers = res.map((row) => new Peer(
@@ -60,23 +72,18 @@ class _GlobalState extends State<HomePage> {
         child: new Icon(FontAwesomeIcons.money),
         tooltip: 'Start managing debts with a new contact',
         backgroundColor: new Color(0xFF42A5F5),
-        onPressed: () async {
-          var contact = await _contactPicker.selectContact();
-          if (contact != null) {
-            R.navigateTo(
-              context,
-              '/peer/${contact.phoneNumber.number}',
-              transition: TransitionType.fadeIn,
-            );
-          } else {
-            print('contact is null');
-          }
+        onPressed: () {
+          R.navigateTo(
+            context,
+            '/choose-peer',
+            transition: TransitionType.fadeIn,
+          );
         },
       ),
       appBar: new AppBar(title: new Text('debtmoney.xyz')),
       body: new PeerList(peers),
       drawer: new SideMenu(me,
-        setLoggedUser: setLoggedUser,
+        getLoggedUser: getLoggedUser,
         getPeers: getPeers,
       ),
     );

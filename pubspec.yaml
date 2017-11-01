@@ -4,6 +4,7 @@ description: A new Flutter project.
 dependencies:
   fluro: ^1.1.0
   http: any
+  uuid: 0.5.3
   font_awesome_flutter: 4.7.2
   contact_picker: 0.0.1+2
   color: any

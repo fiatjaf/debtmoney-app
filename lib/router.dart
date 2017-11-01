@@ -12,9 +12,16 @@ class R {
     },
   );
 
+  static var choosePeerHandler = new Handler(
+    handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      return new ChoosePeer();
+    },
+  );
+
   static void initRoutes() {
     _router.define("/peer-id/:id", handler: peerHandler);
     _router.define("/peer-account/:account", handler: peerHandler);
+    _router.define("/choose-peer", handler: choosePeerHandler);
   }
 
   static void navigateTo(context, String route, {TransitionType transition}) {
