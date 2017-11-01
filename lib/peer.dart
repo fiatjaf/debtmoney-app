@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:sqflite/sqflite.dart';
 
-import './style.dart';
+import './style.dart' as style;
 import './router.dart';
+import './db.dart';
 import './models.dart';
 
 class PeerList extends StatelessWidget {
@@ -13,24 +17,14 @@ class PeerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Expanded(
-      child: new Container(
-        color: Colours.peerPageBackground,
-        child: new ListView.builder(
-          itemCount: peers.length,
-          itemBuilder: (_, index) {
-            var peer = peers[index];
-
-            return new FlatButton(
-              onPressed: () => R.navigateTo(
-                context,
-                '/peer/${peer.id ?? peer.account}',
-                transition: TransitionType.fadeIn,
-              ),
-              child: new PeerItem(peer),
-            );
-          },
-        ),
+    return new Container(
+      color: style.peerPageBackgroundColor,
+      child: new ListView.builder(
+        itemCount: peers.length,
+        itemBuilder: (_, index) {
+          var peer = peers[index];
+          return new PeerItem(peer);
+        },
       ),
     );
   }
@@ -43,86 +37,89 @@ class PeerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      height: 120.0,
-      margin: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-      child: new Stack(
+    return new ListTile(
+      onTap: () => R.navigateTo(
+        context,
+        peer.id != null ? '/peer-id/${peer.id}' : '/peer-account/${peer.account}',
+        transition: TransitionType.fadeIn,
+      ),
+      leading: new Hero(
+        tag: 'peer-icon-${peer.id ?? peer.account}',
+        child: new CircleAvatar(
+          radius: 50.0,
+          backgroundColor: style.Hashcolor(peer.id ?? peer.account),
+          child: new Text((peer.id ?? peer.account)[0]),
+        ),
+      ),
+      title: new Text(
+        peer.name ?? peer.id ?? peer.account,
+        style: new TextStyle(color: Colors.white),
+      ),
+      subtitle: new Row(
         children: <Widget>[
-          new Container (
-            margin: const EdgeInsets.only(top: 16.0, left: 72.0),
-            constraints: new BoxConstraints.expand(),
-            child: new Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                new Text(peer.id ?? peer.account, style: TextStyles.peerTitle),
-                new Text(peer.id ?? peer.account, style: TextStyles.peerLocation),
-                new Container(
-                  color: const Color(0xFF00C6FF),
-                  width: 24.0,
-                  height: 1.0,
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                ),
-                new Row(
-                  children: <Widget>[
-                    new Icon(FontAwesomeIcons.arrowUp, size: 14.0, color: Colours.peerDistance),
-                    new Text(' ' + '17', style: TextStyles.peerDistance),
-                    new Container(width: 24.0),
-                    new Icon(FontAwesomeIcons.arrowDown, size: 14.0, color: Colours.peerDistance),
-                    new Text(' ' + '5', style: TextStyles.peerDistance),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          new Container(
-            alignment: new FractionalOffset(0.0, 0.5),
-            margin: const EdgeInsets.only(left: 24.0),
-            child: new Hero(
-              tag: 'peer-icon-${peer.id ?? peer.account}',
-              child: new CircleAvatar(
-                radius: 50.0,
-                backgroundColor: Hashcolor(peer.id ?? peer.account),
-                child: new Text((peer.id ?? peer.account)[0]),
-              ),
-            ),
-          )
-        ]
+          new Icon(FontAwesomeIcons.arrowUp, size: 14.0,
+            color: style.peerDetailColor),
+          new Text(' ' + '17', style: style.peerDetail),
+          new Container(width: 24.0),
+          new Icon(FontAwesomeIcons.arrowDown, size: 14.0,
+            color: style.peerDetailColor),
+          new Text(' ' + '5', style: style.peerDetail),
+        ],
       ),
     );
   }
 }
 
 class PeerPage extends StatefulWidget {
-  final String id;
+  Map<String, dynamic> params;
 
-  const PeerPage(this.id);
+  PeerPage(this.params);
 
   @override
-  _PeerState createState() => new _PeerState(id);
+  _PeerState createState() => new _PeerState(this.params);
 }
 
 class _PeerState extends State<PeerPage> {
-  final Peer peer;
+  Peer peer;
 
   var debts = <Record>[];
 
-  _PeerState(String id) :
-    peer = new Peer(id: id);
+  _PeerState(Map<String, dynamic> params) {
+    getDB()
+      .then((db) {
+        if (params['id'] != null) {
+          return db.rawQuery(
+            'SELECT * FROM contacts WHERE id = ?', [params['id']]);
+        } else {
+          return db.rawQuery(
+            'SELECT * FROM contacts WHERE account = ?', [params['account']]);
+        }
+      })
+      .then((List<Map> rows) {
+        setState(() {
+          this.peer = new Peer(
+            id: rows[0]['id'],
+            account: rows[0]['account'],
+            name: rows[0]['name']
+          );
+        });
+      })
+      .catchError((err) => print(err));
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (peer == null) {
+      return new Text("loading profile...");
+    }
+
     return new Scaffold(
       appBar: new AppBar(
         title: new Row(
           children: <Widget>[
             new Text(
-              peer.id,
-              style: new TextStyle(
-                color: new Color(0xFF736AB7),
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w300,
-                fontSize: 12.0,
-              ),
+              peer.name ?? peer.id ?? peer.account,
+              style: style.peerPage,
             ),
           ],
         ),
@@ -130,7 +127,7 @@ class _PeerState extends State<PeerPage> {
       ),
       body: new Stack(
         children: <Widget>[
-          new Text(peer.name),
+          new Text(peer.name ?? '~'),
         ],
       ),
     );

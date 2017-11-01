@@ -5,21 +5,34 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-Future<Database> getDB () async {
-  Directory appDocDir = await getApplicationDocumentsDirectory();
+Database _db;
 
-  // deleteDatabase(path);
+Future<Database> _open () async {
+  var appDocDir = await getApplicationDocumentsDirectory();
+  var dbPath = path.join(appDocDir.path, "main.db");
 
-  return openDatabase(path.join(appDocDir.path, "main.db"),
+  // deleteDatabase(dbPath);
+
+  _db = await openDatabase(dbPath,
     version: 1,
     onCreate: (Database db, int version) async {
       await db.execute("""
 CREATE TABLE contacts (
   id TEXT UNIQUE,
   account TEXT UNIQUE NOT NULL,
-  name TEXT
-);
+  name TEXT,
+  actual BOOLEAN
+);  
       """);
     },
   );
+
+  return _db;
+}
+
+Future<Database> getDB () async {
+  if (_db != null) {
+    return _db;
+  }
+  return _open();
 }

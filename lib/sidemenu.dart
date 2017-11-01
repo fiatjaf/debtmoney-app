@@ -42,8 +42,6 @@ class SideMenu extends StatelessWidget {
         }
 
         final Map<String, dynamic> data = JSON.decode(response.body);
-        print(data);
-
         final Database db = await getDB();
 
         try {
@@ -60,14 +58,19 @@ class SideMenu extends StatelessWidget {
                   : false
               )
               .forEach((Map<String, dynamic> contact) {
-                db.insert('contacts', <String, dynamic>{
-                  'account': contact['emailAddresses'][0]['value'],
-                  'name': contact['names'][0]['displayName'],
-                });
+                try {
+                  db.insert('contacts', <String, dynamic>{
+                    'account': contact['emailAddresses'][0]['value'],
+                    'name': contact['names'][0]['displayName'],
+                    'actual': false,
+                  });
+                } catch (err) {
+                  print('insert exception');
+                }
               });
           });
         } catch (err) {
-          print(err);
+          print('transaction exception');
         }
 
         getPeers();

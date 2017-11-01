@@ -5,9 +5,7 @@ import 'package:contact_picker/contact_picker.dart';
 import 'package:sqflite/sqflite.dart';
 
 import './models.dart';
-import './ui.dart';
 import './db.dart';
-import './style.dart';
 import './router.dart';
 import './peer.dart';
 import './sidemenu.dart';
@@ -17,6 +15,10 @@ void main() {
   R.initRoutes();
   runApp(new MaterialApp(
     title: "Debtmoney Debt Manager",
+    theme: new ThemeData(
+      primarySwatch: Colors.deepPurple,
+      accentColor: Colors.amberAccent,
+    ),
     home: new HomePage(),
   ));
 }
@@ -71,12 +73,8 @@ class _GlobalState extends State<HomePage> {
           }
         },
       ),
-      body: new Column(
-        children: <Widget>[
-          new GradientAppBar('debtmoney.xyz'),
-          new PeerList(peers),
-        ]
-      ),
+      appBar: new AppBar(title: new Text('debtmoney.xyz')),
+      body: new PeerList(peers),
       drawer: new SideMenu(me,
         setLoggedUser: setLoggedUser,
         getPeers: getPeers,

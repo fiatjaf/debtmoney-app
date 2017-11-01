@@ -8,12 +8,13 @@ class R {
 
   static var peerHandler = new Handler(
     handlerFunc: (BuildContext context, Map<String, dynamic> params) {
-      return new PeerPage(params["id"]);
+      return new PeerPage(params);
     },
   );
 
   static void initRoutes() {
-    _router.define("/peer/:id", handler: peerHandler);
+    _router.define("/peer-id/:id", handler: peerHandler);
+    _router.define("/peer-account/:account", handler: peerHandler);
   }
 
   static void navigateTo(context, String route, {TransitionType transition}) {
