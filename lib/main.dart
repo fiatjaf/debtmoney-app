@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:fluro/fluro.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sqflite/sqflite.dart';
@@ -14,6 +15,7 @@ import './sidemenu.dart';
 
 void main() {
   R.initRoutes();
+
   runApp(new MaterialApp(
     title: "Debtmoney Debt Manager",
     theme: new ThemeData(
@@ -46,6 +48,7 @@ class _GlobalState extends State<HomePage> {
 
     setState(() {
       me = new Peer(
+        idx: 0,
         id: res[0]['id'],
         account: res[0]['account'],
       );
@@ -55,10 +58,11 @@ class _GlobalState extends State<HomePage> {
   Future getPeers () async {
     final Database db = await getDB();
     List<Map> res = await db.rawQuery(
-      'SELECT id, account, name FROM peers WHERE show');
+      'SELECT idx, id, account, name FROM peers WHERE show');
 
     setState(() {
       peers = res.map((row) => new Peer(
+        idx: row['idx'],
         id: row['id'],
         account: row['account'],
         name: row['name'],

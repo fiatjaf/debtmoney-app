@@ -15,7 +15,7 @@ Future<Database> getDB () async {
     return await _fdb;
   }
 
-  // deleteDatabase(dbPath).then()
+  // await deleteDatabase(dbPath);
 
   _fdb = openDatabase(
     dbPath,
@@ -45,22 +45,24 @@ CREATE TABLE things (
       """);
 
       await db.execute("""
-CREATE TABLE payers (
+CREATE TABLE payments (
   thing TEXT,
   peer INTEGER,
-  amount INTEGER,
+  amount DOUBLE,
 
+  UNIQUE(thing, peer),
   FOREIGN KEY(thing) REFERENCES things(id),
   FOREIGN KEY(peer) REFERENCES things(idx)
 )
       """);
 
       await db.execute("""
-CREATE TABLE parcels (
+CREATE TABLE dues (
   thing TEXT,
   peer INTEGER,
-  amount INTEGER,
+  amount DOUBLE,
   
+  UNIQUE(thing, peer),
   FOREIGN KEY(thing) REFERENCES things(id),
   FOREIGN KEY(peer) REFERENCES things(idx)
 )
